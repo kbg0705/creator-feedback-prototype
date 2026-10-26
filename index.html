@@ -166,6 +166,35 @@ body{background:#f1eeee}
 .cushy-cover-eye i{width:8px;height:9px;border-radius:50%;background:#776581}
 .cushy-caption{font-size:11px;color:#ab96a5;text-align:center;margin:10px 0}
 @media(prefers-reduced-motion:reduce){.cushy-pillow{transition:none!important}}
+
+/* 2026-10-26 / Cushion cinema scene: one gesture, no four-step dashboard. */
+.cushy-interaction{background:#fbf8f5!important;border:1px solid #eae3e0!important;border-radius:25px!important;box-shadow:none!important;padding:14px!important;color:#3a3039!important}
+.cushy-touch{height:314px!important;border-radius:24px!important;background:#1d1923!important;border:0!important;touch-action:none!important;--drop:0px;--topic-alpha:0;--summary-alpha:0;--original-alpha:0;--original-blur:14px;position:relative!important;overflow:hidden!important}
+.cushy-film{position:absolute;inset:0;overflow:hidden;color:#fdf7f9;background:linear-gradient(125deg,#1b1621,#35253d 60%,#1a1421);border-radius:24px}
+.cushy-film:before{content:"";position:absolute;inset:0;opacity:.2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 13%,#000 95%);z-index:4}
+.cushy-film:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#ffffff08 0px,#ffffff08 1px,transparent 1px,transparent 4px);opacity:.12;z-index:4}
+.cushy-film-content{position:absolute;inset:0;padding:27px 24px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.cushy-film-content .scene-topic{opacity:var(--topic-alpha);transition:opacity .12s;color:#efdaff;font-size:12px;font-weight:780;letter-spacing:.03em}
+.cushy-film-content .scene-summary{opacity:var(--summary-alpha);transition:opacity .12s;font-size:16px;line-height:1.65;letter-spacing:-.35px;font-weight:650}
+.cushy-film-content .scene-original{opacity:var(--original-alpha);filter:blur(var(--original-blur));transition:opacity .12s,filter .12s;font-size:15px;line-height:1.62;font-weight:500;color:#fff}
+.cushy-film-content .scene-original small{display:block;color:#bdaecc;font-size:11px;margin-bottom:8px}
+.cushy-film-content .scene-help{margin-top:6px;color:#d7c1e9;font-size:11px;opacity:var(--topic-alpha)}
+.cushy-touch .cushy-pillow{transform:translate3d(0,var(--drop),0)!important;clip-path:none!important;transition:transform .18s cubic-bezier(.22,.66,.22,1)!important;z-index:6!important;inset:0!important;border-radius:34px!important}
+.cushy-touch .cushy-pillow:before{content:"";position:absolute;inset:12px;border:1.6px solid #ffffffbb;border-radius:29px;transform:none!important;width:auto!important;height:auto!important}
+.cushy-touch .cushy-pillow:after{content:"";position:absolute;inset:18px auto auto 15%;width:50%;height:30%;filter:blur(25px);background:#ffffff7a}
+.cushy-cinema-grip{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;transform:rotate(-2deg)}
+.cushy-cinema-face{font-size:26px;font-weight:500;color:#79658499;letter-spacing:5px;line-height:1}
+.cushy-cinema-gesture{font-size:11px;font-weight:720;color:#675475;background:#fffdf4d9;border-radius:30px;padding:10px 14px;box-shadow:0 3px 14px #3a214022}
+.cushy-caption{padding:9px 4px 0;font-size:12px;line-height:1.5;color:#817482!important;text-align:left}
+.cushy-film-under-heading{display:flex;justify-content:space-between;align-items:center;color:#827181;font-size:11px;margin-bottom:10px}
+.cushy-keep-card{padding:14px 15px;border-radius:16px;background:#f3edf2;border:1px solid #eee4ed;margin-top:14px}
+.cushy-keep-card b{font-size:12px;font-weight:770;color:#675174}
+.cushy-keep-card p{margin:8px 0 12px;color:#43394a;font-size:13px;line-height:1.6}
+.cushy-interaction .cushy-buttons{margin-top:11px}
+.cushy-interaction .cushy-buttons button{background:#fff!important;border:1px solid #dfd5e0!important;color:#695874!important}
+.cushy-interaction .cushy-buttons button.strong{background:#75608b!important;color:#fff!important;border-color:#75608b!important}
+.cushy-touch:focus-visible{outline:3px solid #baa0ce;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.cushy-touch .cushy-pillow,.cushy-film-content .scene-topic,.cushy-film-content .scene-summary,.cushy-film-content .scene-original{transition:none!important}}
 </style></head><body><div class="shell">
 <div id="onboarding" class="view"><div class="onboard"><div class="row"><b class="logo">peek<span>eep.</span></b><span class="meta" id="stepLabel">01 / 03</span></div><div class="progress" id="progress"><i class="active"></i><i></i><i></i></div><div id="stepContent"></div><div class="grow"></div><div class="footer"><button class="primary" id="onboardNext" onclick="nextStep()">다음</button><p class="description">설정은 MY PEEK에서 언제든 바꿀 수 있어요.</p></div></div></div>
 <div id="main" class="view"><header class="head"><div class="logo">peek<span>eep.</span></div><div class="row"><button class="iconbtn" onclick="showPage('all')" aria-label="반응 보기">⌕</button><button class="iconbtn" onclick="showPage('myp')" aria-label="MY PEEK">☻</button></div></header>
@@ -229,7 +258,7 @@ function setGlobalTab(t){globalTab=t;renderGlobal()}function setDetailTab(t){det
 function renderGlobal(){makeTabs('globalTabs',globalTab,'setGlobalTab');const items=comments.filter(c=>(globalPost==='all'||c.p===globalPost)&&matches(c,globalTab));document.getElementById('globalCount').textContent='반응 '+items.length+'개';document.getElementById('globalList').innerHTML=items.length?items.map(c=>commentHtml(c,true)).join(''):'<div class="empty">해당 분류의 반응이 없어요.</div>'}
 function openDetail(postId,tab='all'){lastListing=currentPage==='detail'?lastListing:currentPage;currentPost=postId;detailTab=tab;renderDetail();showPage('detail')}
 function renderDetail(){const p=posts[currentPost];document.getElementById('detailHero').innerHTML='<div class="detailhero">'+cover(p)+'<div><div class="meta">'+p.platform+' · '+p.date+' · '+p.weather+'</div><b>'+p.title+'</b><div class="counts"><span>좋아요 '+p.likes+'</span><span>저장 '+p.saves+'</span><span>공유 '+p.shares+'</span><span>댓글 '+p.comments+'</span><span>대댓글 '+p.replies+'</span></div></div></div>';document.getElementById('detailSignals').innerHTML='<div class="signalbar"><div class="signal"><b>'+p.likes+'</b><span>좋아요</span></div><div class="signal"><b>'+p.saves+'</b><span>저장</span></div><div class="signal"><b>'+p.shares+'</b><span>공유</span></div><div class="signal"><b>'+p.comments+'</b><span>댓글</span></div><div class="signal"><b>'+p.replies+'</b><span>대댓글</span></div></div>';makeTabs('detailTabs',detailTab,'setDetailTab');const items=comments.filter(c=>c.p===currentPost&&matches(c,detailTab));document.getElementById('detailCount').textContent='반응 '+items.length+'개';document.getElementById('detailList').innerHTML=(detailTab==='hidden'?hiddenExperience(items):'')+(items.length?items.map(c=>commentHtml(c,false)).join(''):'<div class="empty">해당 분류의 반응이 없어요.</div>')}
-function hiddenExperience(items){if(!items.length)return '';return '<div class="notice" style="margin-top:16px">Cushy가 원문을 감쌌어요. 쿠션을 손가락으로 밀면 주제 → 정제된 요약 → 원문 순서로 조금씩 열려요. 의미 있는 조각만 KEEP할 수도 있어요.</div>'}
+function hiddenExperience(items){if(!items.length)return '';return '<div class="notice" style="margin-top:16px">Cushy가 반응을 가려두었어요. 쿠션을 아래로 내릴수록 주제부터 원문까지 점차 선명하게 드러나요. 위로 올리면 다시 가려져요.</div>'}
 const cushionStages=new Map(),keptFragments=new Map();
 const cushyMeaning={
 5:{topic:'콘텐츠의 완성도',summary:'콘텐츠의 완성도에 대한 불만이 있지만 어떤 부분을 고칠지 구체적으로 제안하지 않았어요.',fragment:'영상 완성도에 대한 불만 · 구체적 개선 제안 없음'},
@@ -242,42 +271,42 @@ function moveCushion(id,stage){cushionStages.set(id,Math.max(0,Math.min(3,stage)
 function keepFragment(id){const c=comments.find(x=>x.id===id);if(!c)return;keptFragments.set(id,cushionInfo(c).fragment);rerenderComments()}
 function removeFragment(id){keptFragments.delete(id);renderSaved()}
 
+
+const cinemaStops=[0,94,194,310];
+function frameValues(y){
+ const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+ return {
+ topic:clamp((y-24)/55),
+ summary:clamp((y-90)/105),
+ original:clamp((y-198)/110),
+ blur:(14-(14*clamp((y-198)/110))).toFixed(1)+'px'
+ };
+}
+function setFilmProgress(el,y){
+ const v=frameValues(y);
+ el.style.setProperty('--drop',y+'px');
+ el.style.setProperty('--topic-alpha',v.topic);
+ el.style.setProperty('--summary-alpha',v.summary);
+ el.style.setProperty('--original-alpha',v.original);
+ el.style.setProperty('--original-blur',v.blur);
+}
 function cushionExperience(c){
- const stage=cushionStage(c.id),m=cushionInfo(c);
+ const stage=cushionStage(c.id),m=cushionInfo(c),y=cinemaStops[stage],v=frameValues(y);
  const n=comments.filter(x=>x.p===c.p&&x.type==='hidden').length;
- const labels=['잠시 가려둘게요','살짝 보기','조금 더 보기','직접 열어보기'];
- const surface=[
-   {title:'가려둔 반응 '+n+'개',desc:'콘텐츠에 대한 반응이 도착했어요.'},
-   {title:m.topic,desc:'어떤 내용인지 주제만 먼저 확인해요.'},
-   {title:m.summary,desc:'날카로운 표현을 덜어내고 의미를 정리했어요.'}
- ];
- let visual='';
- if(stage<3){
-  const v=surface[stage];
-  visual='<div class="cushy-touch" data-cushy="'+c.id+'" data-stage="'+stage+'" tabindex="0" role="slider" aria-label="쿠션을 아래로 내리면 반응이 조금씩 보여요" aria-valuemin="0" aria-valuemax="2" aria-valuenow="'+stage+'" aria-valuetext="'+labels[stage]+'" style="--drop:'+([0,169,246][stage])+'px">'+
-   '<div class="cushy-under"><small>'+(['아직 가려져 있어요','반응 주제','표현을 덜어낸 요약'][stage])+'</small><strong>'+safe(v.title)+'</strong><em>'+safe(v.desc)+'</em><span class="cush-info">'+(stage===0?'지금은 어떤 내용인지 확인하지 않아도 돼요.':stage===1?'한 번 더 내리면 뜻을 볼 수 있어요.':'원문까지 읽을 필요는 없어요.')+'</span></div>'+
-   '<div class="cushy-pillow"><div class="cushy-cover-eye"><i></i><i></i></div><span>⌣</span><span class="cushy-handle">↓ 쿠션을 아래로 내려요</span></div></div>';
- }else{
-  visual='<div class="cushy-context-card"><small>내가 선택한 원문</small>'+safe(c.text)+'<div style="margin-top:12px;color:#807385;font-size:12px">대댓글 '+c.replies+'개 · '+safe(c.replyPreview||'추가 대댓글 없음')+'</div></div>';
- }
- let action='';
- if(stage===0)action='<div class="cushy-buttons"><button class="strong" onclick="moveCushion('+c.id+',1)">조금 내려 보기</button></div>';
- if(stage===1)action='<div class="cushy-buttons"><button class="strong" onclick="moveCushion('+c.id+',2)">한 번 더 내려 보기</button><button onclick="moveCushion('+c.id+',0)">다시 가리기</button></div>';
- if(stage===2)action='<div class="cushy-fragment-choice"><b>필요한 부분만 남겨요</b><p>'+safe(m.fragment)+'</p></div><div class="cushy-buttons"><button class="strong" onclick="keepFragment('+c.id+')">'+(keptFragments.has(c.id)?'보관함에 담았어요':'이 부분만 보관하기')+'</button><button onclick="moveCushion('+c.id+',3)">원문 읽기</button></div><button class="cushy-quiet" onclick="moveCushion('+c.id+',0)" style="background:none;border:0;width:100%">지금은 여기까지만 · 다시 가리기</button>';
- if(stage===3)action='<div class="cushy-fragment-choice"><b>필요한 부분만 남겨요</b><p>'+safe(m.fragment)+'</p></div><div class="cushy-buttons"><button class="strong" onclick="keepFragment('+c.id+')">'+(keptFragments.has(c.id)?'보관함에 담았어요':'이 부분만 보관하기')+'</button><button onclick="moveCushion('+c.id+',0)">쿠션 다시 덮기</button></div>';
- const lines=[
- '공포 영화를 볼 때 쿠션으로 눈을 가리듯, 지금은 반응과 거리를 둘 수 있어요.',
- '쿠션을 조금 내리니 무엇에 관한 이야기인지 보여요.',
- '필요한 뜻만 먼저 읽어도 괜찮아요. 원문은 아직 가려져 있어요.',
- '원문은 직접 열어보기로 선택했을 때만 볼 수 있어요.'
- ];
- return '<div class="cushy-interaction" style="margin-top:14px">'+
- '<div class="row"><div class="cushy-subhead">'+labels[stage]+'</div><div class="tiny" style="color:#9b8c99">'+(stage+1)+' / 4</div></div>'+
- visual+
- '<div class="cushy-shared-meter">'+[0,1,2,3].map(i=>'<i class="'+(i<=stage?'on':'')+'"></i>').join('')+'</div>'+
- '<div class="cushy-stage-copy">'+lines[stage]+'</div>'+
- (stage<3?'<div class="cushy-hint-note"><span class="cushy-hint-dot"></span>손가락 또는 마우스로 아래로 · 키보드 ↓</div>':'')+
- action+'</div>';
+ const aria=['가려진 상태','주제를 살짝 본 상태','정제된 의미를 확인하는 상태','원문까지 확인한 상태'];
+ const scene='<div class="cushy-film"><div class="cushy-film-content">'+
+ '<div class="scene-topic">'+safe(m.topic)+' · 댓글 '+n+'개</div>'+
+ '<div class="scene-summary">'+safe(m.summary)+'</div>'+
+ '<div class="scene-original"><small>원래 작성된 댓글</small>'+safe(c.text)+'</div>'+
+ '<div class="scene-help">필요한 만큼만 봐도 괜찮아요.</div>'+
+ '</div></div>';
+ const pillow='<div class="cushy-pillow"><div class="cushy-cinema-grip"><div class="cushy-cinema-face">•ᴗ•</div><div class="cushy-cinema-gesture">'+(stage===3?'↑ 다시 가리기':'↓ 쿠션을 내려요')+'</div></div></div>';
+ const touch='<div class="cushy-touch" data-cushy="'+c.id+'" tabindex="0" role="slider" aria-label="쿠션을 아래로 내리면 가려진 반응이 서서히 나타납니다" aria-valuemin="0" aria-valuemax="3" aria-valuenow="'+stage+'" aria-valuetext="'+aria[stage]+'" style="--drop:'+y+'px;--topic-alpha:'+v.topic+';--summary-alpha:'+v.summary+';--original-alpha:'+v.original+';--original-blur:'+v.blur+'">'+scene+pillow+'</div>';
+ let keep='';
+ if(stage>=2)keep='<div class="cushy-keep-card"><b>남겨둘 만한 내용</b><p>'+safe(m.fragment)+'</p><div class="cushy-buttons"><button class="strong" onclick="keepFragment('+c.id+')">'+(keptFragments.has(c.id)?'보관했어요 ✓':'이 내용만 보관하기')+'</button></div></div>';
+ return '<div class="cushy-interaction"><div class="cushy-film-under-heading"><span>보고 싶은 만큼만</span><span>쿠션을 위아래로 움직여요</span></div>'+touch+
+ '<div class="cushy-caption">'+(stage===0?'원문을 바로 보지 않아도 돼요.':stage===1?'무슨 이야기인지 먼저 보여요.':stage===2?'표현보다 뜻을 먼저 확인했어요.':'원문까지 열었어요. 다시 가리고 싶다면 쿠션을 올려요.')+'</div>'+
+ keep+'</div>';
 }
 
 function safe(value){return String(value ?? '').replace(/[&<>"']/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]})}
@@ -295,35 +324,38 @@ function renderSaved(){
  document.getElementById('savedList').innerHTML=fragments+normal||'<div class="soft-bg" style="text-align:center;margin-top:22px"><b>아직 남긴 피드백이 없어요.</b><p class="description">원문을 읽지 않고도 필요한 의미만 KEEP할 수 있어요.</p><button class="outline" onclick="showPage(\'all\')">반응 보러 가기</button></div>';
 }
 
+
 let activeDrag=null;
+function nearestCinemaStop(y){
+ let best=0,diff=Infinity;
+ cinemaStops.forEach((v,i)=>{let d=Math.abs(y-v);if(d<diff){diff=d;best=i}});
+ return best;
+}
 document.addEventListener('pointerdown',function(e){
  const el=e.target.closest('[data-cushy]');if(!el)return;
- const id=Number(el.dataset.cushy);activeDrag={id,stage:cushionStage(id),startY:e.clientY,pointerId:e.pointerId,el,moved:false};
+ const id=Number(el.dataset.cushy);
+ activeDrag={id,stage:cushionStage(id),startY:e.clientY,el,pointerId:e.pointerId};
  try{el.setPointerCapture(e.pointerId)}catch(_){}
 });
 document.addEventListener('pointermove',function(e){
  const d=activeDrag;if(!d||d.pointerId!==e.pointerId)return;
- const delta=e.clientY-d.startY;
- if(Math.abs(delta)>9)d.moved=true;
- const base=[0,169,246][Math.min(2,d.stage)];
- const next=Math.max(0,Math.min(246,base+delta));
- d.el.style.setProperty('--drop',next+'px');
+ const y=Math.max(0,Math.min(cinemaStops[3],cinemaStops[d.stage]+(e.clientY-d.startY)));
+ setFilmProgress(d.el,y);
 });
 document.addEventListener('pointerup',function(e){
  const d=activeDrag;if(!d)return;activeDrag=null;
- const delta=e.clientY-d.startY;
- if(delta>44)moveCushion(d.id,Math.min(2,d.stage+1));
- else if(delta< -55)moveCushion(d.id,Math.max(0,d.stage-1));
- else d.el.style.setProperty('--drop',[0,169,246][Math.min(2,d.stage)]+'px');
+ const dx=e.clientY-d.startY,y=Math.max(0,Math.min(cinemaStops[3],cinemaStops[d.stage]+dx));
+ const stage=nearestCinemaStop(y);
+ if(stage!==d.stage)moveCushion(d.id,stage);
+ else setFilmProgress(d.el,cinemaStops[d.stage]);
 });
 document.addEventListener('pointercancel',function(){
- if(!activeDrag)return;const d=activeDrag;activeDrag=null;
- d.el.style.setProperty('--drop',[0,169,246][Math.min(2,d.stage)]+'px');
+ if(!activeDrag)return;const d=activeDrag;activeDrag=null;setFilmProgress(d.el,cinemaStops[d.stage]);
 });
 document.addEventListener('keydown',function(e){
  const el=e.target.closest&&e.target.closest('[data-cushy]');if(!el)return;
  const id=Number(el.dataset.cushy),stage=cushionStage(id);
- if(['ArrowDown','Enter',' '].includes(e.key)){e.preventDefault();moveCushion(id,Math.min(2,stage+1))}
+ if(['ArrowDown','Enter',' '].includes(e.key)){e.preventDefault();moveCushion(id,Math.min(3,stage+1))}
  else if(e.key==='ArrowUp'){e.preventDefault();moveCushion(id,Math.max(0,stage-1))}
 });
 function toggle(el){el.classList.toggle('on');el.setAttribute('aria-pressed',String(el.classList.contains('on')))}
