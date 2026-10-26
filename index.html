@@ -142,6 +142,7 @@ function cushionExperience(c){
  }else{
    visual='<div class="cushy-context-card"><small>REVEAL · 나의 선택으로 열린 원문</small>'+safe(c.text)+'<div style="margin-top:11px;color:#c1b5d1">대댓글 '+c.replies+'개 · '+safe(c.replyPreview||'추가 대댓글 없음')+'</div></div>';
  }
+ const coverSignal=stage===0?'<div class="cushy-hint-note" style="margin-top:12px"><span class="cushy-hint-dot"></span>보호된 댓글 '+n+'개 · 주제: '+safe(m.topic)+'</div>':'';
  const meter='<div class="cushy-shared-meter">'+[0,1,2,3].map(i=>'<i class="'+(i<=stage?'on':'')+'"></i>').join('')+'</div>';
  let action='';
  if(stage===0)action='<div class="cushy-buttons"><button class="strong" onclick="moveCushion('+c.id+',1)">반응 주제 살짝 보기</button></div>';
@@ -149,7 +150,7 @@ function cushionExperience(c){
  if(stage===2)action='<div class="cushy-fragment-choice"><b>✦ 의미만 남길 수도 있어요</b><p>'+safe(m.fragment)+'</p><small>댓글 전체를 보지 않아도 개선에 활용할 단서가 있는지 판단해요.</small></div><div class="cushy-buttons"><button class="strong" onclick="keepFragment('+c.id+')">'+(keptFragments.has(c.id)?'✓ 작은 조각 보관됨':'원문 없이 이 조각 KEEP')+'</button><button onclick="moveCushion('+c.id+',3)">원문도 확인하기</button></div><button class="cushy-quiet" onclick="moveCushion('+c.id+',0)" style="background:none;border:0;width:100%">지금은 여기까지만 · 다시 덮기</button>';
  if(stage===3)action='<div class="cushy-fragment-choice"><b>✦ 남길 만한 부분만 추려두기</b><p>'+safe(m.fragment)+'</p></div><div class="cushy-buttons"><button class="strong" onclick="keepFragment('+c.id+')">'+(keptFragments.has(c.id)?'✓ 조각 보관됨':'의미만 KEEP')+'</button><button onclick="moveCushion('+c.id+',0)">쿠션 다시 덮기</button></div>';
  return '<div class="cushy-interaction" style="margin-top:14px">'+
- '<div class="row"><div class="cushy-subhead">'+stageName[stage]+'</div><div class="tiny" style="color:#a99abc">'+(stage+1)+'/4</div></div>'+visual+meter+
+ '<div class="row"><div class="cushy-subhead">'+stageName[stage]+'</div><div class="tiny" style="color:#a99abc">'+(stage+1)+'/4</div></div>'+visual+coverSignal+meter+
  '<div class="cushy-stage-copy">'+['댓글이 도착해도 원문 대신 부드러운 오브젝트가 덮고 있어요. 댓글 수와 반응의 주제 정도만 알아도 돼요.','손가락으로 조금 밀었어요. 어떤 주제인지 먼저 보여줄게요.','조금 더 밀자 정제된 요약이 나타났어요. 여기서 멈춰도 괜찮아요.','원문은 선택했을 때만 보여줘요. 다시 덮는 것도 언제나 가능해요.'][stage]+'</div>'+
  (stage<3?'<div class="cushy-hint-note"><span class="cushy-hint-dot"></span>PC: 마우스 드래그 · 모바일: 손가락 드래그 · 키보드: ← →</div>':'')+
  action+'</div>';
