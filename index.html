@@ -156,6 +156,7 @@ function cushionExperience(c){
  action+'</div>';
 }
 
+function safe(value){return String(value ?? '').replace(/[&<>"']/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]})}
 function commentHtml(c,showPost){
  const p=posts[c.p],hidden=c.type==='hidden',stage=cushionStage(c.id);
  const name=hidden&&stage<3?'Cushy가 감싼 반응':safe(c.name);
