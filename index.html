@@ -277,7 +277,7 @@ function frameValues(y){
  const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
  return {
  topic:clamp((y-24)/55),
- summary:clamp((y-90)/105),
+ summary:clamp((y-90)/100),
  original:clamp((y-198)/110),
  blur:(14-(14*clamp((y-198)/110))).toFixed(1)+'px'
  };
