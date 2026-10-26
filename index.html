@@ -8,7 +8,7 @@
 .cushy-under{position:absolute;inset:0;display:grid;align-content:center;padding:24px;text-align:center;gap:9px;color:#fff;background:radial-gradient(circle at 70% 50%,#443361,#1b1725)}
 .cushy-under small{color:#c4b5e3;font-weight:700;letter-spacing:.08em}
 .cushy-under strong{font-size:15px;line-height:1.6}
-.cushy-pillow{position:absolute;inset:0;clip-path:inset(0 calc(var(--opened)*1%) 0 0 round 22px);background:radial-gradient(circle at 30% 25%,#e6cbff,#9565ee 60%,#5530c1);display:grid;place-items:center;transition:clip-path .2s ease}
+.cushy-pillow{position:absolute;inset:0;clip-path:inset(0 0 0 calc(var(--opened)*1%) round 22px);background:radial-gradient(circle at 30% 25%,#e6cbff,#9565ee 60%,#5530c1);display:grid;place-items:center;transition:clip-path .2s ease}
 .cushy-pillow span{color:#59308c;font-size:43px;font-weight:800}
 .cushy-handle{position:absolute;bottom:12px;right:12px;background:#fff;border-radius:30px;padding:8px 12px;color:#613ab7;font-size:11px;font-weight:800;pointer-events:none}
 .cushy-subhead{color:#c9b6f4;font-size:11px;letter-spacing:.08em;font-weight:800}
@@ -53,6 +53,20 @@
 .cushy-shared-meter i{height:4px;flex:1;border-radius:8px;background:#40304c}
 .cushy-shared-meter i.on{background:#d6b9ff}
 @media(prefers-reduced-motion:reduce){.cushy-pillow{transition:none!important}}
+
+/* Reveal the text from the left, where it is laid out. Keep the cushion at the right edge. */
+.cushy-pillow{clip-path:inset(0 0 0 calc(var(--opened)*1%) round 24px)!important}
+.cushy-under{padding:20px 18px!important;text-align:left!important;gap:8px!important}
+.cushy-under strong{display:block;width:83%;max-width:83%!important;font-size:16px!important;line-height:1.5;overflow-wrap:break-word}
+.cushy-under em{width:83%;max-width:83%!important;display:block;color:#ded0f0!important}
+.cushy-under small{width:83%;display:block}
+.cushy-touch[data-stage="1"] .cushy-pillow span,
+.cushy-touch[data-stage="2"] .cushy-pillow span{visibility:hidden}
+.cushy-touch[data-stage="1"] .cushy-handle,
+.cushy-touch[data-stage="2"] .cushy-handle{right:7px!important;left:auto!important;bottom:10px;transform:none!important;writing-mode:vertical-rl;border-radius:14px;padding:9px 5px;max-height:130px;font-size:10px!important}
+.cushy-touch[data-stage="2"] .cushy-under strong{font-size:14px!important}
+.cushy-readable{margin-top:10px;padding:14px 15px;border:1px solid #554267;border-radius:16px;background:#261b35;color:#faf7ff;line-height:1.65;font-size:13px}
+.cushy-readable small{display:block;color:#bfa4ff;font-size:11px;font-weight:800;margin-bottom:6px}
 </style></head><body><div class="shell">
 <div id="onboarding" class="view"><div class="onboard"><div class="row"><b class="logo">peek<span>eep.</span></b><span class="meta" id="stepLabel">01 / 03</span></div><div class="progress" id="progress"><i class="active"></i><i></i><i></i></div><div id="stepContent"></div><div class="grow"></div><div class="footer"><button class="primary" id="onboardNext" onclick="nextStep()">다음</button><p class="description">설정은 MY PEEK에서 언제든 바꿀 수 있어요.</p></div></div></div>
 <div id="main" class="view"><header class="head"><div class="logo">peek<span>eep.</span></div><div class="row"><button class="iconbtn" onclick="showPage('all')" aria-label="반응 보기">⌕</button><button class="iconbtn" onclick="showPage('myp')" aria-label="MY PEEK">☻</button></div></header>
@@ -136,12 +150,13 @@ function cushionExperience(c){
  let visual='';
  if(stage<3){
    const p=preview[stage];
-   visual='<div class="cushy-touch" data-cushy="'+c.id+'" tabindex="0" role="slider" aria-label="쿠션을 옆으로 밀어 반응 살짝 보기" aria-valuemin="0" aria-valuemax="2" aria-valuenow="'+stage+'" aria-valuetext="'+stageName[stage]+'" style="--opened:'+([0,42,73][stage])+'">'+
+   visual='<div class="cushy-touch" data-cushy="'+c.id+'" data-stage="'+stage+'" tabindex="0" role="slider" aria-label="쿠션을 옆으로 밀어 반응 살짝 보기" aria-valuemin="0" aria-valuemax="2" aria-valuenow="'+stage+'" aria-valuetext="'+stageName[stage]+'" style="--opened:'+([0,89,96][stage])+'">'+
    '<div class="cushy-under"><small>'+p.label+'</small><strong>'+safe(p.title)+'</strong><em>'+safe(p.desc)+'</em></div>'+
    '<div class="cushy-pillow"><span>◕‿◕</span></div><span class="cushy-handle">'+(stage===0?'쿠션을 살짝 밀어봐 →':'조금 더 밀어봐 →')+'</span></div>';
  }else{
    visual='<div class="cushy-context-card"><small>REVEAL · 나의 선택으로 열린 원문</small>'+safe(c.text)+'<div style="margin-top:11px;color:#c1b5d1">대댓글 '+c.replies+'개 · '+safe(c.replyPreview||'추가 대댓글 없음')+'</div></div>';
  }
+ const readable=stage===1?'<div class="cushy-readable"><small>PEEK · 반응 주제</small>'+safe(m.topic)+'</div>':stage===2?'<div class="cushy-readable"><small>PEEK · 정제된 요약</small>'+safe(m.summary)+'</div>':'';
  const coverSignal=stage===0?'<div class="cushy-hint-note" style="margin-top:12px"><span class="cushy-hint-dot"></span>보호된 댓글 '+n+'개 · 주제: '+safe(m.topic)+'</div>':'';
  const meter='<div class="cushy-shared-meter">'+[0,1,2,3].map(i=>'<i class="'+(i<=stage?'on':'')+'"></i>').join('')+'</div>';
  let action='';
@@ -180,8 +195,8 @@ document.addEventListener('pointerdown',e=>{
 document.addEventListener('pointermove',e=>{
  if(!activeDrag||activeDrag.pointerId!==e.pointerId)return;
  const d=activeDrag,dist=Math.max(0,e.clientX-d.x),max=d.el.clientWidth*.62;
- const base=[0,42,73][Math.min(2,d.stage)];
- const progress=Math.min(100,base+(dist/max)*44);
+ const base=[0,89,96][Math.min(2,d.stage)];
+ const progress=Math.min(100,base+(dist/max)*(100-base));
  d.el.style.setProperty('--opened',progress);
 });
 document.addEventListener('pointerup',e=>{
@@ -190,9 +205,9 @@ document.addEventListener('pointerup',e=>{
  if(dx>42&&Math.abs(dx)>Math.abs(dy)*.75){
    // The original text is never shown by gesture alone.
    moveCushion(d.id,Math.min(2,d.stage+1));
- }else{d.el.style.setProperty('--opened',[0,42,73][Math.min(2,d.stage)])}
+ }else{d.el.style.setProperty('--opened',[0,89,96][Math.min(2,d.stage)])}
 });
-document.addEventListener('pointercancel',()=>{if(activeDrag){const d=activeDrag;d.el.style.setProperty('--opened',[0,42,73][Math.min(2,d.stage)]);activeDrag=null}});
+document.addEventListener('pointercancel',()=>{if(activeDrag){const d=activeDrag;d.el.style.setProperty('--opened',[0,89,96][Math.min(2,d.stage)]);activeDrag=null}});
 document.addEventListener('keydown',e=>{
  const el=e.target.closest&&e.target.closest('[data-cushy]');if(!el)return;
  const id=Number(el.dataset.cushy),stage=cushionStage(id);
