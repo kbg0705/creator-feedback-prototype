@@ -162,6 +162,12 @@ input[hidden]{display:none}
 .examples{display:flex;flex-wrap:wrap;gap:6px}
 .ex{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:6px 10px;font-size:12.5px;color:#3A3F45;text-align:left}
 .ex:hover{border-color:#2B8FB3;background:#F0FAFD}
+.jump{display:flex;flex-direction:column;gap:6px}
+.jb{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:9px 12px;cursor:pointer;font:inherit}
+.jb b{font-size:12px;color:#6b6e76;font-weight:600}
+.jb span{font-size:13.5px;color:#1c1f23;line-height:1.4}
+.jb:hover{border-color:#2B8FB3;background:#F0FAFD}
+.jb.on{border-color:#17171b;background:#fff;box-shadow:inset 3px 0 0 #7cd2ee}
 .primary{flex:1;border:0;background:#111;color:#fff;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700}
 .primary:disabled{background:#B9BDC2;cursor:not-allowed}
 .ai-state{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:10px;background:#F1F2F4;color:#6E737A;white-space:nowrap}
@@ -285,25 +291,9 @@ pre{white-space:pre-wrap;word-break:break-all;background:var(--panel);border-rad
       <button class="ghost-btn" id="restart">처음부터 다시 보기</button>
     </section>
 
-    <section class="box" aria-labelledby="h-cmt">
-      <h2 id="h-cmt">새 댓글</h2>
-      <input type="password" id="code" inputmode="numeric" autocomplete="off" placeholder="AI 암호" aria-label="AI 사용 암호" hidden>
-      <input type="text" id="author" value="익명_31" aria-label="작성자">
-      <textarea id="custom" rows="3" aria-label="댓글 내용" placeholder="예: 썸네일은 예쁜데 내용은 별로네요"></textarea>
-      <div class="examples" aria-label="예시 댓글">
-        <button class="ex" data-a="thumb_lover" data-t="썸네일은 예쁜데 내용은 별로네요">썸네일은 예쁜데 내용은 별로네요</button>
-        <button class="ex" data-a="volume_up" data-t="목소리가 너무 작아서 하나도 안 들려요 볼륨 좀 키워주세요">목소리가 너무 작아서 하나도 안 들려요</button>
-      </div>
-      <div class="row"><button class="primary" id="sendBtn">Cushy에게 보내기</button></div>
-      <p class="msg" id="msg"></p>
-    </section>
-
-    <section class="box">
-      <details>
-        <summary>Cushy가 만든 데이터</summary>
-        <pre id="json"></pre>
-      </details>
-      <p class="hint">게이지가 많이 찰수록 센 댓글이에요.</p>
+    <section class="box" aria-labelledby="h-list">
+      <h2 id="h-list">댓글 원문</h2>
+      <div class="jump" id="jump"></div>
     </section>
   </aside>
 </div>
@@ -400,11 +390,11 @@ function renderData(){
   $("meterSum").parentElement.setAttribute("title", "주의 가능성 " + d.caution + "%");
   $("askText").textContent = d.ask_again[S.mode];
   $("thoughtText").textContent = d.after_reveal[S.mode];
-  $("json").textContent = JSON.stringify({ comment:it.text, author:it.author, first_time_commenter:it.first, mode:S.mode, cushy:d }, null, 2);
   renderCounter();
 }
 
 function renderCounter(){
+  if ($("jump")) renderJump();
   $("nav").classList.toggle("done-nav", S.finished);
   $("counter").innerHTML = S.queue.map((it,i) => '<i class="' + (S.finished ? "done" : i === S.qi ? "cur" : S.done.has(it.id) ? "done" : "") + '"></i>').join("");
 }
@@ -579,146 +569,16 @@ document.querySelectorAll("#seg button").forEach(b => b.addEventListener("click"
 let tt;
 function toast(t){ const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("show"), 1400); }
 
-/* ---------- Claude ---------- */
-let sample = null, connecting = null;
-// no status chip: progress shows on the send button, problems show in the message line
-function setAi(state, text){ $("sendBtn").textContent = state === "busy" ? text : "Cushy에게 보내기"; }
-function msg(t, err){ const m = $("msg"); m.textContent = t; m.classList.toggle("err", !!err); }
-
-function connectAI(){
-  if (sample) return Promise.resolve(sample);
-  if (connecting) return connecting;
-  connecting = (async () => {
-    if (!(window.claude && typeof window.claude.use === "function")){
-      if (CUSHY_API){
-        $("code").hidden = false;
-        try { $("code").value = sessionStorage.getItem("peekeep_code") || ""; } catch(e){}
-        msg("암호를 넣으면 AI가 문구를 만들어요.");
-      } else msg("지금은 샘플 댓글만 볼 수 있어요.");
-      return null;
-    }
-    try { sample = await window.claude.use("sample"); } catch(e){ sample = null; }
-    if (sample){ setAi("on", "Claude 연결됨"); msg(""); }
-    else { setAi("err", "AI 꺼짐"); msg("이 화면에서는 AI가 꺼져 있어요. claude.ai 아티팩트 화면에서 열어 주세요. (use=null)", true); }
-    return sample;
-  })();
-  connecting.finally(() => { connecting = null; });
-  return connecting;
+/* ---------- jump list ---------- */
+function renderJump(){
+  $("jump").innerHTML = S.queue.map((it,i) => '<button class="jb' + (!S.finished && i === S.qi ? ' on' : '') + '" data-i="' + i + '"><b>' + it.author + '</b><span></span></button>').join("");
+  $("jump").querySelectorAll(".jb").forEach((b,i) => { b.querySelector("span").textContent = S.queue[i].text; b.addEventListener("click", () => {
+    const i2 = +b.dataset.i; if (S.busy) return;
+    if (S.finished){ S.finished = false; S.done.clear(); }
+    if (i2 === S.qi && !stage.classList.contains("done-on")) return;
+    slideTo(i2, i2 >= S.qi ? 1 : -1);
+  }); });
 }
-
-function buildPrompt(text, author, first){
-  return [
-"너는 1인 크리에이터용 앱 PEEKEEP의 캐릭터 Cushy야. 크리에이터(코코)의 찐친. 무조건 코코 편인 100% 공감러야. 단, 쓸모 있는 지적이 있으면 '이건 챙겨', '포켓에 넣어둬'처럼 챙기라고 조언해.",
-"",
-"[말투] 반말. 아주 짧게. 친구 카톡처럼. 화면이 작으니 글자 수 제한을 꼭 지켜.",
-"- 작성자를 욕하거나 비하·조롱하지 마. '왜 저래' 정도까지만.",
-"- 원문의 공격적인 단어는 옮기지 말고 순화해.",
-"- 아래 [맥락]의 숫자만 써. 숫자·사실을 지어내지 마.",
-"- '증거', '도달', '닿았다', '성장', '관심의 표시' 같은 교훈조 표현 금지.",
-"",
-"[성향별]",
-"- COVER: 공감만.",
-"- PEEK: 공감 + reframe_allowed면 사실 한 줄 툭 (예: '근데 처음 보는 닉네임이네?').",
-"- REVEAL: 담담하게, reframe_allowed면 맥락 숫자로 (예: '응원은 18개!').",
-"- 외모·인신공격이면 reframe_allowed=false. 공감 + 숨기자는 말만.",
-"- 쓸모 있는 지적이면 after_reveal은 '포켓에 넣어둬' 류 조언.",
-"",
-"[필드]",
-"- category: 주의/참고/응원. caution: 주의일 가능성 0~100 정수. intensity: 1~5.",
-"- topic: 무엇에 관한 댓글인지 2~6자 명사구. 공격적 단어 금지.",
-"- summary: 원문 안 봐도 알게, 반말, 공백 포함 20자 이내 (예: '영상 완성도가 별로래.', '편집이 빨라 어지럽대.'). 쓸 만한 지적이 있을 때만 짧게 담고, 없다는 말('고칠 점은 없어', '이유는 없어')은 쓰지 마.",
-"- useful_point: 다음 콘텐츠에 쓸 개선점 8자 이내. 없으면 null.",
-"- ask_again: 원문 보기 직전 질문. 반말 15자 이내, '볼래?'로 끝 (예: '좀 세. 볼래?', '괜찮아. 볼래?', '안 보는 게 나아. 볼래?'). 성향별 3개.",
-"- after_reveal: 원문 본 직후 한마디. 반말 18자 이내. 성향별 3개.",
-"",
-"[맥락]",
-"영상: " + CONTEXT.video + " (" + CONTEXT.platform + ")",
-"반응 수: 응원 " + CONTEXT.cheer + "개, 참고 " + CONTEXT.reference + "개, 주의 " + CONTEXT.caution + "개",
-"작성자: " + author + (first ? " (이 채널에 처음 댓글 단 사람)" : " (전에도 댓글 단 사람)"),
-"",
-"[댓글 원문]",
-text,
-"",
-"아래 모양의 JSON 하나만 답해.",
-'{"category":"주의","caution":80,"attack_type":"콘텐츠 평가|외모·인신공격|관계·기대|쓸모 있는 지적|기타","topic":"","intensity":3,"summary":"","useful_point":null,"reframe_allowed":true,"ask_again":{"COVER":"","PEEK":"","REVEAL":""},"after_reveal":{"COVER":"","PEEK":"","REVEAL":""}}'
-  ].join("\n");
-}
-
-function normalize(d){
-  if (typeof d === "string") d = JSON.parse(d);
-  if (Array.isArray(d)) d = d[0];
-  const ok = d && typeof d === "object" && d.summary && d.topic && d.ask_again && d.after_reveal &&
-    ["COVER","PEEK","REVEAL"].every(k => d.ask_again[k] && d.after_reveal[k]);
-  if (!ok) throw { code:"bad_shape", message:"필드가 빠진 응답" };
-  d.caution = Math.max(0, Math.min(100, Math.round(Number(d.caution) || 0)));
-  d.intensity = Math.max(1, Math.min(5, Math.round(Number(d.intensity) || 3)));
-  if (!d.useful_point) d.useful_point = null;
-  return d;
-}
-
-async function askCushy(){
-  const text = $("custom").value.trim();
-  const author = $("author").value.trim() || "익명";
-  if (!text){ msg("댓글을 입력해 주세요.", true); $("custom").focus(); return; }
-  if (!sample) await connectAI();
-  const viaWorker = !sample && !!CUSHY_API;
-  if (!sample && !viaWorker) return;
-  if (viaWorker && !$("code").value.trim()){ msg("AI 암호를 입력해 주세요.", true); $("code").focus(); return; }
-  $("sendBtn").disabled = true;
-  const t0 = Date.now();
-  const tick = setInterval(() => setAi("busy", "읽는 중 " + Math.round((Date.now() - t0) / 1000) + "초"), 500);
-  setAi("busy", "읽는 중");
-  msg("");
-  try {
-    let d;
-    if (viaWorker){
-      const r = await fetch(CUSHY_API, { method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ text, author, code: $("code").value.trim() }) });
-      const body = await r.json().catch(() => ({}));
-      if (r.status === 401) throw { code:"wrong_code", message:"암호 불일치" };
-      if (!r.ok || !body.ai) throw { code:"worker_" + r.status, message: body.error || "" };
-      try { sessionStorage.setItem("peekeep_code", $("code").value.trim()); } catch(e){}
-      d = normalize(body.ai);
-    }
-    else try { d = normalize(await sample.json(buildPrompt(text, author, true), { cache:false })); }
-    catch (e1){
-      // one fallback on a malformed answer: ask for plain text and parse it ourselves
-      if (!e1 || !["invalid_json","bad_shape","empty_completion"].includes(e1.code)) throw e1;
-      const r = await sample(buildPrompt(text, author, true), { cache:false });
-      const m = r.text.match(/\{[\s\S]*\}/);
-      if (!m) throw { code:"invalid_json", message:"JSON 없음" };
-      d = normalize(m[0]);
-    }
-    const item = { id:"c" + Date.now(), author, first:true, text, ai:d };
-    S.queue.splice(S.qi + 1, 0, item);
-    $("custom").value = "";
-    setAi("on", "Claude 연결됨");
-    if (S.finished){ S.qi = S.qi; slideTo(S.queue.indexOf(item), 1); }
-    else slideTo(S.qi + 1, 1);
-  } catch (e) {
-    const code = (e && (e.code || e.name)) || "unknown";
-    const detail = (e && e.message) ? " · " + String(e.message).slice(0, 120) : "";
-    setAi("err", "실패");
-    const why = {
-      not_granted:"AI 사용이 허용되지 않았어요. 새로고침 후 동의 창에서 허용해 주세요.",
-      rate_limited:"요청이 많아요. 1분 뒤에 다시 눌러 주세요.",
-      sampling_disabled:"이 계정에서는 AI를 쓸 수 없어요.",
-      session_expired:"claude.ai에 다시 로그인해 주세요.",
-      refused:"이 댓글은 Claude가 처리하지 않았어요. 다른 문장으로 해 보세요.",
-      invalid_json:"응답 형식이 깨졌어요. 한 번 더 눌러 주세요.",
-      wrong_code:"암호가 틀렸어요."
-    }[code] || "문구를 만들지 못했어요. 한 번 더 눌러 주세요.";
-    msg(why + " (" + code + detail + ")", true);
-    if (code === "not_granted" || code === "sampling_disabled") sample = null;
-  } finally {
-    clearInterval(tick);
-    $("sendBtn").disabled = false;
-  }
-}
-$("sendBtn").addEventListener("click", askCushy);
-document.querySelectorAll(".ex").forEach(b => b.addEventListener("click", () => {
-  $("custom").value = b.dataset.t; $("author").value = b.dataset.a; $("custom").focus();
-}));
 
 /* ---------- fit phone to screen ---------- */
 function fit(){
@@ -730,7 +590,6 @@ fit();
 
 $("segHelp").textContent = MODE_HELP[S.mode];
 renderData(); renderStep();
-connectAI();
 })();
 </script>
 </body>
