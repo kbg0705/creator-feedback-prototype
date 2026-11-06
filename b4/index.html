@@ -156,8 +156,9 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,.stage:focus-vis
 .seg button[aria-pressed="true"]{background:#fff;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .hint{font-size:12.5px;color:#4A4F55;margin:0}
 .ghost-btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;font-size:12.5px;font-weight:700;color:#3A3F45}
-textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:14px;resize:vertical;background:#fff}
+textarea,input[type=text],input[type=password]{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;font-size:14px;resize:vertical;background:#fff}
 .row{display:flex;gap:8px}
+input[hidden]{display:none}
 .examples{display:flex;flex-wrap:wrap;gap:6px}
 .ex{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:6px 10px;font-size:12.5px;color:#3A3F45;text-align:left}
 .ex:hover{border-color:#2B8FB3;background:#F0FAFD}
@@ -286,6 +287,7 @@ pre{white-space:pre-wrap;word-break:break-all;background:var(--panel);border-rad
 
     <section class="box" aria-labelledby="h-cmt">
       <h2 id="h-cmt">새 댓글</h2>
+      <input type="password" id="code" inputmode="numeric" autocomplete="off" placeholder="AI 암호" aria-label="AI 사용 암호" hidden>
       <input type="text" id="author" value="익명_31" aria-label="작성자">
       <textarea id="custom" rows="3" aria-label="댓글 내용" placeholder="예: 썸네일은 예쁜데 내용은 별로네요"></textarea>
       <div class="examples" aria-label="예시 댓글">
@@ -320,6 +322,8 @@ const MINI = '<defs><radialGradient id="mh" cx=".3" cy=".2" r=".6"><stop offset=
 document.querySelectorAll(".mini-cushy").forEach(s => s.innerHTML = MINI);
 
 /* ---------- data ---------- */
+// GitHub Pages 등 Claude 밖에서 AI를 쓸 때 부르는 Cloudflare Worker 주소 (비어 있으면 샘플만)
+const CUSHY_API = "";
 const CONTEXT = { video:"개강날! 같이 준비해요 GRWM", platform:"YouTube", cheer:18, reference:5, caution:3 };
 
 const BASE = [
@@ -586,7 +590,12 @@ function connectAI(){
   if (connecting) return connecting;
   connecting = (async () => {
     if (!(window.claude && typeof window.claude.use === "function")){
-      setAi("", "샘플 모드"); msg("Claude 밖이라 AI 없이 샘플만 돌아가요."); return null;
+      if (CUSHY_API){
+        $("code").hidden = false;
+        try { $("code").value = sessionStorage.getItem("peekeep_code") || ""; } catch(e){}
+        msg("암호를 넣으면 AI가 문구를 만들어요.");
+      } else msg("지금은 샘플 댓글만 볼 수 있어요.");
+      return null;
     }
     try { sample = await window.claude.use("sample"); } catch(e){ sample = null; }
     if (sample){ setAi("on", "Claude 연결됨"); msg(""); }
@@ -652,7 +661,9 @@ async function askCushy(){
   const author = $("author").value.trim() || "익명";
   if (!text){ msg("댓글을 입력해 주세요.", true); $("custom").focus(); return; }
   if (!sample) await connectAI();
-  if (!sample) return;
+  const viaWorker = !sample && !!CUSHY_API;
+  if (!sample && !viaWorker) return;
+  if (viaWorker && !$("code").value.trim()){ msg("AI 암호를 입력해 주세요.", true); $("code").focus(); return; }
   $("sendBtn").disabled = true;
   const t0 = Date.now();
   const tick = setInterval(() => setAi("busy", "읽는 중 " + Math.round((Date.now() - t0) / 1000) + "초"), 500);
@@ -660,7 +671,16 @@ async function askCushy(){
   msg("");
   try {
     let d;
-    try { d = normalize(await sample.json(buildPrompt(text, author, true), { cache:false })); }
+    if (viaWorker){
+      const r = await fetch(CUSHY_API, { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ text, author, code: $("code").value.trim() }) });
+      const body = await r.json().catch(() => ({}));
+      if (r.status === 401) throw { code:"wrong_code", message:"암호 불일치" };
+      if (!r.ok || !body.ai) throw { code:"worker_" + r.status, message: body.error || "" };
+      try { sessionStorage.setItem("peekeep_code", $("code").value.trim()); } catch(e){}
+      d = normalize(body.ai);
+    }
+    else try { d = normalize(await sample.json(buildPrompt(text, author, true), { cache:false })); }
     catch (e1){
       // one fallback on a malformed answer: ask for plain text and parse it ourselves
       if (!e1 || !["invalid_json","bad_shape","empty_completion"].includes(e1.code)) throw e1;
@@ -685,7 +705,8 @@ async function askCushy(){
       sampling_disabled:"이 계정에서는 AI를 쓸 수 없어요.",
       session_expired:"claude.ai에 다시 로그인해 주세요.",
       refused:"이 댓글은 Claude가 처리하지 않았어요. 다른 문장으로 해 보세요.",
-      invalid_json:"응답 형식이 깨졌어요. 한 번 더 눌러 주세요."
+      invalid_json:"응답 형식이 깨졌어요. 한 번 더 눌러 주세요.",
+      wrong_code:"암호가 틀렸어요."
     }[code] || "문구를 만들지 못했어요. 한 번 더 눌러 주세요.";
     msg(why + " (" + code + detail + ")", true);
     if (code === "not_granted" || code === "sampling_disabled") sample = null;
