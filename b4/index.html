@@ -283,8 +283,8 @@ pre{white-space:pre-wrap;word-break:break-all;background:var(--panel);border-rad
     <section class="box" aria-labelledby="h-mode">
       <h2 id="h-mode">성향</h2>
       <div class="seg" id="seg">
-        <button data-mode="COVER" aria-pressed="false">COVER</button>
-        <button data-mode="PEEK" aria-pressed="true">PEEK</button>
+        <button data-mode="COVER" aria-pressed="true">COVER</button>
+        <button data-mode="PEEK" aria-pressed="false">PEEK</button>
         <button data-mode="REVEAL" aria-pressed="false">REVEAL</button>
       </div>
       <p class="hint" id="segHelp"></p>
@@ -355,7 +355,7 @@ const STAGE_H = 340, REVEAL_Y = 268;
 const DAILY = 5; // 하루에 볼 가려진 반응 수. 다 보면 오늘은 닫아서 계속 보게 되는 걸 막아요
 
 /* ---------- state ---------- */
-const S = { mode:"PEEK", queue:BASE.slice(), qi:0, done:new Set(), stepIdx:0, confirmed:false, finished:false, busy:false };
+const S = { mode:"COVER", queue:BASE.slice(), qi:0, done:new Set(), stepIdx:0, confirmed:false, finished:false, busy:false };
 const stage = $("stage"), slide = $("slide"), cushion = $("cushion"), knob = $("knob");
 const cur = () => S.queue[S.qi];
 const steps = () => STEPS[S.mode];
